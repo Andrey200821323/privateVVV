@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Online Chat</title>
+    <style>
+        .message {
+            margin-bottom: 10px;
+            padding: 10px;
+            background-color: #f1f1f1;
+            border-radius: 5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .message-info {
+            font-size: 12px;
+            color: #888;
+        }
+        .delete-button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
+            font-size: 12px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>Online Chat</h1>
+    
+    <p>Server IP: <span id="server-ip">Loading...</span></p>
+    
+    <form onsubmit="sendMessage(); return false;">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <br>
+        <label for="message">Message:</label>
+        <textarea id="message" name="message" required></textarea>
+        <br>
+        <button type="submit">Send</button>
+    </form>
+    
+    <hr>
+    
+    <div id="chat-messages"></div>
+    
+    <hr>
+    
+    <button onclick="clearChat()">Clear Chat</button>
+    
+    <script>
+        let messages = [];
+
+        function getServerIP() {
+            fetch('https://api.ipify.org?format=json')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('server-ip').textContent = data.ip;
+                })
+                .catch(error => {
+                    console.error('Error getting server IP:', error);
+                    document.getElementById('server-ip').textContent = 'Error';
+                });
+        }
+
+        function sendMessage() {
+            const username = document.getElementById('username').value;
+            const message = document.getElementById('message').value;
+            const timestamp = new Date().toLocaleString();
+
+            messages.push({ username, message, timestamp });
+            updateChatMessages();
+
+            document.getElementById('message').value = '';
+        }
+
+        function deleteMessage(index) {
+            messages.splice(index, 1);
+            updateChatMessages();
+        }
+
+        function clearChat() {
+            messages = [];
+            updateChatMessages();
+        }
+
+        function updateChatMessages() {
+            const chatMessagesDiv = document.getElementById('chat-messages');
+            chatMessagesDiv.innerHTML = '';
+
+            messages.forEach((message, index) => {
+                const messageDiv = document.createElement('div');
+                messageDiv.classList.add('message');
+
+                const messageInfo = document.createElement('div');
+                messageInfo.classList.add('message-info');
+                messageInfo.textContent = `${message.username} - ${message.timestamp}`;
+
+                const deleteButton = document.createElement('button');
+                deleteButton.classList.add('delete-button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.onclick = () => deleteMessage(index);
+
+                messageDiv.appendChild(messageInfo);
+                messageDiv.appendChild(deleteButton);
+                chatMessagesDiv.appendChild(messageDiv);
+            });
+        }
+
+        getServerIP();
+    </script>
+</body>
+</html>
